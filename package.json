@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
+    "framer-motion": "^12.17.3",
+    "react-datepicker": "^8.4.0"
+  }
+}
