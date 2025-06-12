@@ -8,17 +8,43 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
-
-    console.log('Logged in with:', { email, password });
-    setError('');
+  
+    try {
+      const response = await fetch("http://localhost:8000/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          username: email,
+          password: password,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.detail || "Login failed");
+        return;
+      }
+  
+      const data = await response.json();
+      localStorage.setItem("access_token", data.access_token); // Save JWT token
+  
+      // Redirect or update UI
+      window.location.href = "/dashboard"; // change this to your protected route
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An error occurred during login.");
+    }
   };
+  
 
   return (
     <>
