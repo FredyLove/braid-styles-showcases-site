@@ -9,7 +9,8 @@ async def create_user(db: AsyncSession, user: schemas.UserCreate):
     db_user = models.User(
         username=user.username,
         email=user.email,
-        hashed_password=hash_password(user.password)  # This should be hashed in production
+        hashed_password=hash_password(user.password),  # This should be hashed in production
+        role = user.role
     )
     db.add(db_user)
     await db.commit()

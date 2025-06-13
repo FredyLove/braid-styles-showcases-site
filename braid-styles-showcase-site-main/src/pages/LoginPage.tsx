@@ -35,16 +35,28 @@ export const LoginPage = () => {
       }
   
       const data = await response.json();
-      localStorage.setItem("access_token", data.access_token); // Save JWT token
+      const payload = JSON.parse(atob(data.access_token.split('.')[1]));
+      const token = data.access_token;
+      const role = data.role;
+
+      localStorage.setItem("user_email", email);
+      localStorage.setItem("access_token", token); // Save JWT token
+      localStorage.setItem("role", data.role); 
+      localStorage.setItem("username", payload.sub); // 👈 Store username
   
       // Redirect or update UI
-      window.location.href = "/dashboard"; // change this to your protected route
+        if (role === "admin") {
+          window.location.href = "/admin-dashboard";
+        } else {
+          window.location.href = "/client-dashboard";
+        }
+
     } catch (error) {
       console.error("Login error:", error);
       setError("An error occurred during login.");
     }
   };
-  
+
 
   return (
     <>

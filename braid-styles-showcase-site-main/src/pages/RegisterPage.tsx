@@ -5,6 +5,7 @@ import Navigation from '../components/Navigation';
 
 export const RegisterPage = () => {
   const [name, setName] = useState('');
+  const [role, setRole] = useState('user')
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,7 +26,7 @@ export const RegisterPage = () => {
     }
 
     try {
-      console.log("Sending:", { name, email, password });
+      console.log("Sending:", { name, email, password, role });
       const response = await fetch('http://localhost:8000/users/', {
         method: 'POST',
         headers: {
@@ -35,6 +36,7 @@ export const RegisterPage = () => {
           username: name,
           email,
           password,
+          role
         }),
       });
 

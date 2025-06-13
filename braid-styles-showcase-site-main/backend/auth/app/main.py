@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from . import models, schemas, crud
+from . import models, schemas, crud, database
 from app.dependencies import get_current_user
 from app import models
 from .database import SessionLocal, engine
@@ -9,6 +9,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from .schemas import Token
 from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 
 app = FastAPI()
@@ -54,11 +56,32 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
         )
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
+    
+    access_token = create_access_token(
+        data={"sub": user.email, "role": user.role},
+        expires_delta=access_token_expires
+        )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "role": user.role
+        }
 
 
 @app.get("/protected")
 async def read_protected_data(current_user: models.User = Depends(get_current_user)):
     return {"message": f"Hello, {current_user.username}!"}
+
+# Delete a user 
+
+@app.delete("/users/{user_id}", status_code=204)
+async def delete_user(user_id: int, db: AsyncSession = Depends(database.get_db)):
+    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    await db.delete(user)
+    await db.commit()
+    return
