@@ -11,6 +11,7 @@ import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
 import ClientDashboard from "./components/ClientDashboard/ClientDashboard"
 import ProtectedRoute from "./components/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized";
+import EditProfile from "./components/ClientDashboard/EditProfile";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
 
           <Route path="*" element={<NotFound />} />
           <Route path="/unauthorized" element={<Unauthorized/>} />
+          <Route path="/edit-profile" element={ <EditProfile/> }/>
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

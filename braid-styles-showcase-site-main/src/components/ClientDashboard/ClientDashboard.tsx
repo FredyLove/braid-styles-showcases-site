@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import OverviewContent from './OverviewContent';
@@ -9,6 +10,30 @@ import ProductsContent from './ProductsContent';
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [username, setUsername] = useState('');
+  const navigate = useNavigate();
+
+  // Simulate fetching user data from local storage or an API
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    const storedEmail = localStorage.getItem('email');
+
+    if (storedUsername) {
+      setUsername(storedUsername);
+    } else if (storedEmail) {
+      setUsername(storedEmail || '');
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('username');
+    navigate('/login'); // Redirect to login page
+  };
+
+  const handleEditProfile = () => {
+    navigate('/edit-profile'); // Navigate to edit profile page
+  };
 
   const [upcomingAppointments] = useState([
     {
@@ -69,12 +94,23 @@ const ClientDashboard = () => {
 
   return (
     <div className="min-h-screen bg-amber-50">
-      <Header username="Sarah J." />
+      <Header
+        username={username}
+        onLogout={handleLogout}
+        onEditProfile={handleEditProfile}
+      />
       <main className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
           <div className="flex-1">
-            {activeTab === 'overview' && <OverviewContent username="Sarah J." upcomingAppointments={upcomingAppointments} favoriteStyles={favoriteStyles} recommendedProducts={recommendedProducts} />}
+            {activeTab === 'overview' && (
+              <OverviewContent
+                username={username}
+                upcomingAppointments={upcomingAppointments}
+                favoriteStyles={favoriteStyles}
+                recommendedProducts={recommendedProducts}
+              />
+            )}
             {activeTab === 'appointments' && <AppointmentsContent />}
             {activeTab === 'favorites' && <FavoritesContent />}
             {activeTab === 'tutorials' && <TutorialsContent />}

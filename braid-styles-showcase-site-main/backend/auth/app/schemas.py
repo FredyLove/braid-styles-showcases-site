@@ -20,7 +20,9 @@ class UserOut(BaseModel):
     role: str
 
     class Config:
-        orm_mode = True
+        model_config = {
+            "from_attributes": True
+        }
 
 # ✅ New: For login input
 class UserLogin(BaseModel):
@@ -31,4 +33,8 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    role: str
+    
+class UserUpdate(BaseModel):
+    email: EmailStr
     role: str

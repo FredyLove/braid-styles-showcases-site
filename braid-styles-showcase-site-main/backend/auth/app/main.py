@@ -11,6 +11,7 @@ from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from app.routers import admin_user
 
 
 app = FastAPI()
@@ -20,6 +21,9 @@ app = FastAPI()
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
+
+
+app.include_router(admin_user.router)
 
 # CORS (for frontend connection)
 app.add_middleware(

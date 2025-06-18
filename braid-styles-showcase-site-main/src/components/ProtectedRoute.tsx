@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   if (requiredRole && role !== requiredRole) {
     return <Navigate to="/unauthorized" replace />;
   }
-
+ 
   return children;
 };
 

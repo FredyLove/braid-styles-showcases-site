@@ -15,7 +15,7 @@ const Navigation = () => {
       navigate("/", { state: { scrollTo: sectionId } });
       return;
     }
-
+ 
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });

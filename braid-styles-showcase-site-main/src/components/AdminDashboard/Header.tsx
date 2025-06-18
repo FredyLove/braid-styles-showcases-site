@@ -15,7 +15,7 @@ const Header = ({ username, handleLogout }: HeaderProps) => {
             <CogIcon className="h-6 w-6 text-gray-500" />
           </button>
           <div className="flex items-center">
-            <img src="/user-avatar.jpg" alt="User profile" className="h-8 w-8 rounded-full" />
+            <img src="/images/img11.jpg" alt="User profile" className="h-8 w-8 rounded-full" />
             <span className="ml-2 text-sm font-medium">{username}</span>
           </div>
         </div>
