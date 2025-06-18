@@ -48,7 +48,7 @@ export const LoginPage = () => {
         if (role === "admin") {
           window.location.href = "/admin-dashboard";
         } else {
-          window.location.href = "/client-dashboard";
+          window.location.href = "/";
         }
 
     } catch (error) {

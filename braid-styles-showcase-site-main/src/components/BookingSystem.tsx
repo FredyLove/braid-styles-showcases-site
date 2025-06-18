@@ -28,7 +28,7 @@ const BookingSystem = () => {
     { id: "consultation", name: "Hair Consultation", duration: "30 min", price: "$25" }
   ];
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!selectedDate || !selectedTime || !selectedService) {
       toast({
         title: "Missing Information",
@@ -37,17 +37,41 @@ const BookingSystem = () => {
       });
       return;
     }
-
-    toast({
-      title: "Booking Requested!",
-      description: `Your appointment for ${format(selectedDate, "MMMM d, yyyy")} at ${selectedTime} has been requested. I'll confirm within 24 hours.`,
-    });
-
-    // Reset form
-    setSelectedDate(undefined);
-    setSelectedTime("");
-    setSelectedService("");
+  
+    try {
+      const res = await fetch("http://localhost:8000/bookings/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}` // assuming you're storing the token here
+        },
+        body: JSON.stringify({
+          service_type: selectedService,
+          date: selectedDate.toISOString().split("T")[0],
+          time: selectedTime
+        })
+      });
+  
+      if (!res.ok) throw new Error("Failed to book");
+  
+      toast({
+        title: "Booking Requested!",
+        description: `Your appointment for ${format(selectedDate, "MMMM d, yyyy")} at ${selectedTime} has been requested.`,
+      });
+  
+      // Reset form
+      setSelectedDate(undefined);
+      setSelectedTime("");
+      setSelectedService("");
+    } catch (err) {
+      toast({
+        title: "Booking Failed",
+        description: "There was an error submitting your booking. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+  
 
   const isDateDisabled = (date: Date) => {
     const today = new Date();

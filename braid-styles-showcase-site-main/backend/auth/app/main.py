@@ -11,7 +11,7 @@ from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from app.routers import admin_user
+from app.routers import admin_user, booking
 
 
 app = FastAPI()
@@ -24,6 +24,7 @@ async def startup():
 
 
 app.include_router(admin_user.router)
+app.include_router(booking.router)
 
 # CORS (for frontend connection)
 app.add_middleware(
@@ -89,3 +90,13 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(database.get_db))
     await db.delete(user)
     await db.commit()
     return
+
+@app.get("/my", response_model=list[schemas.BookingOut])
+async def get_my_bookings(
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(models.Booking).where(models.Booking.user_id == current_user.id)
+    )
+    return result.scalars().all()

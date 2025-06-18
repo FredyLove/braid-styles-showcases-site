@@ -14,6 +14,7 @@ import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import AftercareSection from "@/components/AftercareSection";
 import LoyaltyProgram from "@/components/LoyaltyProgram";
+import UserBookings from "@/components/UserBookings";
 
 const Index = () => {
   const location = useLocation();
@@ -46,6 +47,7 @@ const Index = () => {
         <LoyaltyProgram />
         <ServicesSection />
         <BookingSystem />
+        {localStorage.getItem("access_token") && <UserBookings/> }
         <VideoTutorials />
         <AftercareSection />
         <TestimonialsSection />

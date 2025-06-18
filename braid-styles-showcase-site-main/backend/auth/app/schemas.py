@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
+from datetime import date
 
 # For creating a user
 
@@ -38,3 +39,19 @@ class Token(BaseModel):
 class UserUpdate(BaseModel):
     email: EmailStr
     role: str
+
+class BookingCreate(BaseModel):
+    service_type: str
+    date: date
+    time: str
+    
+class BookingOut(BaseModel):
+    id: int
+    service_type: str
+    date: date
+    time: str
+    status: str
+    user_id: int
+
+class BookingUpdateStatus(BaseModel):
+    status: str
