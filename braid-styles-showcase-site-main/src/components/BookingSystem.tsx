@@ -1,5 +1,6 @@
-
-import { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+// Import dependencies and types
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,73 +11,95 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
+// Define type for Service fetched from the backend
+interface Service {
+  id: number;
+  title: string;
+  description: string;
+  duration: string;
+  price: string;
+  features: string[];
+  icon: string;
+}
+
 const BookingSystem = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedService, setSelectedService] = useState<string>("");
+  const [services, setServices] = useState<Service[]>([]);
   const { toast } = useToast();
 
   const timeSlots = [
-    "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
+    "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
     "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
   ];
 
-  const services = [
-    { id: "protective", name: "Protective Braids", duration: "3-5 hours", price: "$150+" },
-    { id: "special", name: "Special Occasion Style", duration: "2-4 hours", price: "$120+" },
-    { id: "touchup", name: "Quick Touch-Up", duration: "30-60 min", price: "$40+" },
-    { id: "consultation", name: "Hair Consultation", duration: "30 min", price: "$25" }
-  ];
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/services/");
+        if (!res.ok) throw new Error("Failed to load services");
+        const data = await res.json();
+        setServices(data);
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "Could not load services. Try again later.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   const handleBooking = async () => {
     if (!selectedDate || !selectedTime || !selectedService) {
       toast({
         title: "Missing Information",
-        description: "Please select a date, time, and service to book your appointment.",
+        description: "Please select a date, time, and service.",
         variant: "destructive",
       });
       return;
     }
-  
+
     try {
       const res = await fetch("http://localhost:8000/bookings/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}` // assuming you're storing the token here
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({
           service_type: selectedService,
           date: selectedDate.toISOString().split("T")[0],
-          time: selectedTime
-        })
+          time: selectedTime,
+        }),
       });
-  
+
       if (!res.ok) throw new Error("Failed to book");
-  
+
       toast({
         title: "Booking Requested!",
         description: `Your appointment for ${format(selectedDate, "MMMM d, yyyy")} at ${selectedTime} has been requested.`,
       });
-  
-      // Reset form
+
       setSelectedDate(undefined);
       setSelectedTime("");
       setSelectedService("");
-    } catch (err) {
+    } catch {
       toast({
         title: "Booking Failed",
-        description: "There was an error submitting your booking. Please try again.",
+        description: "There was an error submitting your booking.",
         variant: "destructive",
       });
     }
   };
-  
 
   const isDateDisabled = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return date < today || date.getDay() === 0; // Disable past dates and Sundays
+    return date < today || date.getDay() === 0;
   };
 
   return (
@@ -97,7 +120,6 @@ const BookingSystem = () => {
               <CardTitle className="font-display text-center">Schedule Your Visit</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Service Selection */}
               <div className="space-y-3">
                 <Label className="text-base font-medium">Choose Your Service</Label>
                 <div className="grid md:grid-cols-2 gap-3">
@@ -106,12 +128,12 @@ const BookingSystem = () => {
                       key={service.id}
                       className={cn(
                         "cursor-pointer transition-all hover:shadow-md",
-                        selectedService === service.id && "ring-2 ring-primary bg-primary/5"
+                        selectedService === service.title && "ring-2 ring-primary bg-primary/5"
                       )}
-                      onClick={() => setSelectedService(service.id)}
+                      onClick={() => setSelectedService(service.title)}
                     >
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-foreground">{service.name}</h3>
+                        <h3 className="font-semibold text-foreground">{service.title}</h3>
                         <div className="flex justify-between text-sm text-muted-foreground mt-1">
                           <span>{service.duration}</span>
                           <span className="font-medium text-primary">{service.price}</span>
@@ -122,7 +144,6 @@ const BookingSystem = () => {
                 </div>
               </div>
 
-              {/* Date Selection */}
               <div className="space-y-3">
                 <Label className="text-base font-medium">Select Date</Label>
                 <Popover>
@@ -151,7 +172,6 @@ const BookingSystem = () => {
                 </Popover>
               </div>
 
-              {/* Time Selection */}
               <div className="space-y-3">
                 <Label className="text-base font-medium">Select Time</Label>
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
@@ -170,8 +190,7 @@ const BookingSystem = () => {
                 </div>
               </div>
 
-              {/* Book Button */}
-              <Button 
+              <Button
                 onClick={handleBooking}
                 size="lg"
                 className="w-full"

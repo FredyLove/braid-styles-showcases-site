@@ -1,7 +1,7 @@
 import {
   CalendarIcon,
   ChartBarIcon,
-  BookmarkIcon,
+  WrenchIcon,
   VideoCameraIcon,
   UserGroupIcon,
   ShoppingBagIcon,
@@ -36,13 +36,13 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
           Appointments
         </button>
         <button
-          onClick={() => setActiveTab('saved')}
+          onClick={() => setActiveTab('services')}
           className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full ${
-            activeTab === 'saved' ? 'bg-[#f8e8d8] text-[#b36f34]' : 'text-gray-600 hover:bg-gray-50'
+            activeTab === 'services' ? 'bg-[#f8e8d8] text-[#b36f34]' : 'text-gray-600 hover:bg-gray-50'
           }`}
         >
-          <BookmarkIcon className="h-5 w-5 mr-3" />
-          Saved Styles
+          <WrenchIcon className="h-5 w-5 mr-3" />
+          Services
         </button>
         <button
           onClick={() => setActiveTab('tutorials')}

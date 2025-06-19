@@ -1,11 +1,15 @@
-
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Phone, Clock, Instagram } from "lucide-react";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+
+interface Service {
+  id: number;
+  title: string;
+}
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -15,8 +19,22 @@ const ContactSection = () => {
     service: '',
     message: ''
   });
-  
+  const [services, setServices] = useState<Service[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/services/");
+        if (!res.ok) throw new Error("Failed to fetch services");
+        const data = await res.json();
+        setServices(data);
+      } catch (err) {
+        console.error("Error fetching services:", err);
+      }
+    };
+    fetchServices();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,10 +114,9 @@ const ContactSection = () => {
                     required
                   >
                     <option value="">Select a Service</option>
-                    <option value="protective">Protective Braids</option>
-                    <option value="special">Special Occasion Style</option>
-                    <option value="touchup">Quick Touch-Up</option>
-                    <option value="consultation">Consultation</option>
+                    {services.map((service) => (
+                      <option key={service.id} value={service.title}>{service.title}</option>
+                    ))}
                   </select>
                 </div>
                 

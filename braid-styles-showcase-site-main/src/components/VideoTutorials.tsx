@@ -1,52 +1,48 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const VideoTutorials = () => {
-  const tutorials = [
-    {
-      id: 1,
-      title: "Basic Box Braids Tutorial",
-      description: "Learn the fundamentals of creating beautiful box braids from start to finish.",
-      videoId: "vNFTB08b1tw", // Replace with actual YouTube video IDs  
-      duration: "15:30",
-      difficulty: "Beginner"
-    },
-    {
-      id: 2,
-      title: "French Braid Mastery",
-      description: "Master the classic French braid technique with professional tips and tricks.",
-      videoId: "-eItcamMAF8", // Replace with actual YouTube video IDs
-      duration: "12:45",
-      difficulty: "Intermediate"
-    },
-    {
-      id: 3,
-      title: "Protective Styling Tips",
-      description: "Essential techniques for maintaining healthy hair while wearing protective styles.",
-      videoId: "JN96_HQXtWo", // Replace with actual YouTube video IDs
-      duration: "18:20",
-      difficulty: "All Levels"
-    },
-    {
-      id: 4,
-      title: "Goddess Braids Step-by-Step",
-      description: "Create stunning goddess braids with detailed step-by-step instructions.",
-      videoId: "zLugWvepvOw", // Replace with actual YouTube video IDs
-      duration: "22:15",
-      difficulty: "Advanced"
-    }
-  ];
+type Tutorial = {
+  id: number;
+  title: string;
+  description: string;
+  video_id: string;
+  duration: string;
+  difficulty: string;
+};
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Beginner": return "bg-green-100 text-green-800";
-      case "Intermediate": return "bg-yellow-100 text-yellow-800";
-      case "Advanced": return "bg-red-100 text-red-800";
-      default: return "bg-blue-100 text-blue-800";
-    }
-  };
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case "Beginner":
+      return "bg-green-100 text-green-800";
+    case "Intermediate":
+      return "bg-yellow-100 text-yellow-800";
+    case "Advanced":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-blue-100 text-blue-800";
+  }
+};
+
+const VideoTutorials = () => {
+  const [tutorials, setTutorials] = useState<Tutorial[]>([]);
+
+  useEffect(() => {
+    const fetchTutorials = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/tutorials/homepage");
+        if (!res.ok) throw new Error("Failed to fetch tutorials");
+        const data = await res.json();
+        setTutorials(data);
+      } catch (error) {
+        console.error("Error fetching tutorials:", error);
+      }
+    };
+
+    fetchTutorials();
+  }, []);
 
   return (
     <section id="tutorials" className="py-20 bg-background">
@@ -60,7 +56,7 @@ const VideoTutorials = () => {
             Perfect for both beginners and experienced stylists.
           </p>
         </div>
-
+  
         <div className="grid md:grid-cols-2 gap-8">
           {tutorials.map((tutorial, index) => (
             <Card 
@@ -70,7 +66,7 @@ const VideoTutorials = () => {
             >
               <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-accent/20">
                 <iframe
-                  src={`https://www.youtube.com/embed/${tutorial.videoId}`}
+                  src={`https://www.youtube.com/embed/${tutorial.video_id}`}
                   title={tutorial.title}
                   className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -80,7 +76,6 @@ const VideoTutorials = () => {
                   <Play className="h-12 w-12 text-white" />
                 </div>
               </div>
-              
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg font-display leading-tight">
@@ -94,12 +89,8 @@ const VideoTutorials = () => {
                   </span>
                 </div>
               </CardHeader>
-              
               <CardContent className="space-y-4">
-                <p className="text-muted-foreground">
-                  {tutorial.description}
-                </p>
-                
+                <p className="text-muted-foreground">{tutorial.description}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Duration: {tutorial.duration}
@@ -113,23 +104,9 @@ const VideoTutorials = () => {
             </Card>
           ))}
         </div>
-
-        <div className="text-center mt-12">
-          <Card className="inline-block p-6 bg-gradient-to-r from-primary/10 to-accent/10">
-            <h3 className="text-xl font-display font-semibold text-foreground mb-2">
-              Want More Tutorials?
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Subscribe to my YouTube channel for weekly braiding tutorials and styling tips!
-            </p>
-            <Button size="lg">
-              Subscribe to My Channel
-            </Button>
-          </Card>
-        </div>
       </div>
     </section>
   );
-};
+}
 
-export default VideoTutorials;
+export default VideoTutorials
