@@ -5,6 +5,8 @@ from app import models, schemas, database
 from app.dependencies import get_db, get_current_user, get_current_admin_user
 from app.mail_config import send_status_email
 
+
+
 router = APIRouter(
     prefix="/bookings",
     tags=["Bookings"]
@@ -72,3 +74,45 @@ async def get_my_bookings(
         select(models.Booking).where(models.Booking.user_id == current_user.id)
     )
     return result.scalars().all()
+
+
+# Update booking (reschedule)
+@router.put("/reschedule/{booking_id}", response_model=schemas.BookingOut)
+async def reschedule_booking(
+    booking_id: int,
+    update_data: schemas.BookingUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    result = await db.execute(select(models.Booking).where(models.Booking.id == booking_id))
+    booking = result.scalar_one_or_none()
+
+    if not booking or booking.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    booking.date = update_data.date
+    booking.time = update_data.time
+    booking.status = "Pending"  # Reset status after reschedule
+    await db.commit()
+    await db.refresh(booking)
+    return booking
+
+# Cancel booking
+@router.put("/cancel/{booking_id}", response_model=schemas.BookingOut)
+async def cancel_booking(
+    booking_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    result = await db.execute(select(models.Booking).where(models.Booking.id == booking_id))
+    booking = result.scalar_one_or_none()
+
+    if not booking or booking.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    booking.status = "Cancelled"
+    await db.commit()
+    await db.refresh(booking)
+    return booking
+
+

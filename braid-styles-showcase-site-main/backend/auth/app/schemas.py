@@ -55,3 +55,10 @@ class BookingOut(BaseModel):
 
 class BookingUpdateStatus(BaseModel):
     status: str
+    
+class BookingUpdate(BaseModel):
+    date: date
+    time: str
+
+class BookingCancel(BaseModel):
+    status: str = "Cancelled"

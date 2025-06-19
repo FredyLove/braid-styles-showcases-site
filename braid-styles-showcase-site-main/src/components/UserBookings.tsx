@@ -1,4 +1,3 @@
-import { time } from "console";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -23,15 +22,62 @@ const UserBookings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleReschedule = async (bookingId: number) => {
+    const newDate = prompt("Enter new date (YYYY-MM-DD):");
+    const newTime = prompt("Enter new time (e.g. 2:00 PM):");
+
+    if (!newDate || !newTime) {
+      toast.warning("Date and time are required to reschedule.");
+      return;
+    }
+
+    const token = localStorage.getItem("access_token");
+
+    const res = await fetch(`http://localhost:8000/bookings/reschedule/${bookingId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ date: newDate, time: newTime }),
+    });
+
+    if (res.ok) {
+      toast.success("Booking rescheduled!");
+      fetchBookings();
+    } else {
+      toast.error("Failed to reschedule booking.");
+    }
+  };
+
+  const handleCancel = async (bookingId: number) => {
+    const confirmCancel = confirm("Are you sure you want to cancel this booking?");
+    if (!confirmCancel) return;
+
+    const token = localStorage.getItem("access_token");
+
+    const res = await fetch(`http://localhost:8000/bookings/cancel/${bookingId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      toast.success("Booking cancelled.");
+      fetchBookings();
+    } else {
+      toast.error("Failed to cancel booking.");
+    }
+  };
+
   const fetchBookings = async () => {
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("access_token");
-      
-      if (!token) {
-        throw new Error("Authentication required");
-      }
+
+      if (!token) throw new Error("Authentication required");
 
       const res = await fetch("http://localhost:8000/bookings/my", {
         headers: {
@@ -39,9 +85,7 @@ const UserBookings = () => {
         },
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch bookings");
-      }
+      if (!res.ok) throw new Error("Failed to fetch bookings");
 
       const data = await res.json();
       setBookings(data);
@@ -58,18 +102,15 @@ const UserBookings = () => {
     fetchBookings();
   }, []);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
-  };
 
-  const formatTime = (timeString: string) => {
-    return timeString;
-  };
+  const formatTime = (timeString: string) => timeString;
 
   if (loading) {
     return (
@@ -104,38 +145,12 @@ const UserBookings = () => {
           onClick={fetchBookings}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex items-center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-              clipRule="evenodd"
-            />
-          </svg>
           Refresh
         </button>
       </div>
 
       {bookings.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-12 w-12 mx-auto text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
           <h3 className="mt-4 text-lg font-medium text-gray-900">No bookings found</h3>
           <p className="mt-1 text-sm text-gray-500">You haven't made any bookings yet.</p>
         </div>
@@ -165,7 +180,7 @@ const UserBookings = () => {
                       {formatDate(booking.date)} at {formatTime(booking.time)}
                     </p>
                   </div>
-                  
+
                   {booking.notes && (
                     <div>
                       <p className="text-sm font-medium text-gray-500">Notes</p>
@@ -174,26 +189,22 @@ const UserBookings = () => {
                   )}
                 </div>
 
-                <div className="mt-4 flex space-x-3">
-                  <button
-                    className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-sm font-medium hover:bg-blue-100"
-                    onClick={() => {
-                      // Add reschedule functionality here
-                      toast.info("Reschedule feature coming soon");
-                    }}
-                  >
-                    Reschedule
-                  </button>
-                  <button
-                    className="px-3 py-1 bg-red-50 text-red-600 rounded-md text-sm font-medium hover:bg-red-100"
-                    onClick={() => {
-                      // Add cancel functionality here
-                      toast.info("Cancel feature coming soon");
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
+                {(booking.status === "Pending" || booking.status === "Accepted") && (
+                  <div className="mt-4 flex space-x-3">
+                    <button
+                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-sm font-medium hover:bg-blue-100"
+                      onClick={() => handleReschedule(booking.id)}
+                    >
+                      Reschedule
+                    </button>
+                    <button
+                      className="px-3 py-1 bg-red-50 text-red-600 rounded-md text-sm font-medium hover:bg-red-100"
+                      onClick={() => handleCancel(booking.id)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

@@ -12,7 +12,7 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.routers import admin_user, booking
-
+from app.routers import cleanup
 
 app = FastAPI()
 
@@ -25,6 +25,7 @@ async def startup():
 
 app.include_router(admin_user.router)
 app.include_router(booking.router)
+app.include_router(cleanup.router)
 
 # CORS (for frontend connection)
 app.add_middleware(
