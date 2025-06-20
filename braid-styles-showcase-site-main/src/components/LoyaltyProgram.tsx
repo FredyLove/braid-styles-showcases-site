@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 // Types
 type Reward = {
@@ -8,10 +9,17 @@ type Reward = {
   pointsRequired: number;
 };
 
-// Component
+type DecodedToken = {
+  sub: string;
+  exp: number;
+  name?: string;
+};
+
 const LoyaltyProgram = () => {
   const [points, setPoints] = useState(150);
   const [selectedReward, setSelectedReward] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [rewards, setRewards] = useState<Reward[]>([
     {
       id: "1",
@@ -32,12 +40,28 @@ const LoyaltyProgram = () => {
       pointsRequired: 200,
     },
     {
-        id: "4",
-        name: "Common Client Discount",
-        description: "Reduce price, cuffs, or accessories for a lower price.",
-        pointsRequired: 500,
-      }
+      id: "4",
+      name: "Common Client Discount",
+      description: "Reduce price, cuffs, or accessories for a lower price.",
+      pointsRequired: 500,
+    },
   ]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+        if (decoded.exp * 1000 > Date.now()) {
+          setIsLoggedIn(true);
+        }
+      } catch {
+        setIsLoggedIn(false);
+      }
+    }
+  }, []);
+
+  if (!isLoggedIn) return null;
 
   return (
     <section className="py-16">
@@ -52,8 +76,8 @@ const LoyaltyProgram = () => {
               <p className="text-gray-600">points earned</p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-              <div 
-                className="bg-primary h-4 rounded-full" 
+              <div
+                className="bg-primary h-4 rounded-full"
                 style={{ width: `${Math.min(100, (points / 200) * 100)}%` }}
               ></div>
             </div>
@@ -67,17 +91,17 @@ const LoyaltyProgram = () => {
         {/* Rewards */}
         <h3 className="text-xl font-semibold mb-4">Available Rewards</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {rewards.map(reward => (
-            <div 
+          {rewards.map((reward) => (
+            <div
               key={reward.id}
               className={`border rounded-lg p-4 transition-all ${
                 selectedReward === reward.id
-                  ? 'border-primary ring-2 ring-primary/30'
-                  : 'border-gray-200 hover:border-primary'
-              } ${
-                points < reward.pointsRequired ? 'opacity-50' : 'cursor-pointer'
-              }`}
-              onClick={() => points >= reward.pointsRequired && setSelectedReward(reward.id)}
+                  ? "border-primary ring-2 ring-primary/30"
+                  : "border-gray-200 hover:border-primary"
+              } ${points < reward.pointsRequired ? "opacity-50" : "cursor-pointer"}`}
+              onClick={() =>
+                points >= reward.pointsRequired && setSelectedReward(reward.id)
+              }
             >
               <div className="flex justify-between items-start mb-2">
                 <h4 className="font-medium">{reward.name}</h4>
@@ -87,7 +111,9 @@ const LoyaltyProgram = () => {
               </div>
               <p className="text-gray-600 text-sm mb-3">{reward.description}</p>
               {points < reward.pointsRequired ? (
-                <p className="text-red-500 text-sm">Need {reward.pointsRequired - points} more points</p>
+                <p className="text-red-500 text-sm">
+                  Need {reward.pointsRequired - points} more points
+                </p>
               ) : (
                 <button className="text-primary text-sm font-medium">
                   Redeem Reward

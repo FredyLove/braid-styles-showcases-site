@@ -12,6 +12,8 @@ import ClientDashboard from "./components/ClientDashboard/ClientDashboard"
 import ProtectedRoute from "./components/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized";
 import EditProfile from "./components/ClientDashboard/EditProfile";
+import ProfilePage from "./pages/ProfilePage";
+import UserBookings from "./components/UserBookings";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/bookings" element={<UserBookings />} />
           
           {/* ✅ Protected route */}
           <Route

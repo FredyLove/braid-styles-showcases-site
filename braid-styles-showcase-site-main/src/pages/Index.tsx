@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import Navigation from "@/components/Navigation";
@@ -14,10 +14,17 @@ import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import AftercareSection from "@/components/AftercareSection";
 import LoyaltyProgram from "@/components/LoyaltyProgram";
-import UserBookings from "@/components/UserBookings";
+import { jwtDecode } from "jwt-decode";
+
+type DecodedToken = {
+  sub: string;
+  exp: number;
+  name?: string;
+};
 
 const Index = () => {
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const scrollTo = location.state?.scrollTo;
@@ -30,6 +37,19 @@ const Index = () => {
         }, 100); // Slight delay for reliable scroll
       }
     }
+
+    // Check authentication status
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+        if (decoded.exp * 1000 > Date.now()) {
+          setIsLoggedIn(true);
+        }
+      } catch {
+        setIsLoggedIn(false);
+      }
+    }
   }, [location]);
 
   return (
@@ -40,14 +60,13 @@ const Index = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <Navigation />
+        <Navigation isLoggedIn={isLoggedIn} />
         <HeroSection />
         <StatsSection />
         <PortfolioSection />
-        <LoyaltyProgram />
+        {isLoggedIn && <LoyaltyProgram />}
         <ServicesSection />
         <BookingSystem />
-        {localStorage.getItem("access_token") && <UserBookings/> }
         <VideoTutorials />
         <AftercareSection />
         <TestimonialsSection />

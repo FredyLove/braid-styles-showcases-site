@@ -27,6 +27,18 @@ class UserOut(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+
+class UserProfile(BaseModel):
+    email: Optional[EmailStr]
+    username: Optional[str]
+    profile_image: Optional[str]
+
+class UserPasswordUpdate(BaseModel):
+    old_password: str
+    new_password: str
 
 class Token(BaseModel):
     access_token: str

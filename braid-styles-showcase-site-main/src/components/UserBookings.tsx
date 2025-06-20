@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Calendar, Clock, RefreshCw, Edit, X, Check, AlertTriangle } from "lucide-react";
 
 type Booking = {
   id: number;
@@ -10,66 +15,30 @@ type Booking = {
   notes?: string;
 };
 
-const statusColors = {
-  Pending: "bg-yellow-100 text-yellow-800",
-  Accepted: "bg-blue-100 text-blue-800",
-  Rejected: "bg-red-100 text-red-800",
-  Completed: "bg-green-100 text-green-800",
+const statusConfig = {
+  Pending: {
+    color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+    icon: <Clock className="h-4 w-4 mr-1" />,
+  },
+  Accepted: {
+    color: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    icon: <Check className="h-4 w-4 mr-1" />,
+  },
+  Rejected: {
+    color: "bg-red-100 text-red-800 hover:bg-red-200",
+    icon: <X className="h-4 w-4 mr-1" />,
+  },
+  Completed: {
+    color: "bg-green-100 text-green-800 hover:bg-green-200",
+    icon: <Check className="h-4 w-4 mr-1" />,
+  },
 };
 
 const UserBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const handleReschedule = async (bookingId: number) => {
-    const newDate = prompt("Enter new date (YYYY-MM-DD):");
-    const newTime = prompt("Enter new time (e.g. 2:00 PM):");
-
-    if (!newDate || !newTime) {
-      toast.warning("Date and time are required to reschedule.");
-      return;
-    }
-
-    const token = localStorage.getItem("access_token");
-
-    const res = await fetch(`http://localhost:8000/bookings/reschedule/${bookingId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ date: newDate, time: newTime }),
-    });
-
-    if (res.ok) {
-      toast.success("Booking rescheduled!");
-      fetchBookings();
-    } else {
-      toast.error("Failed to reschedule booking.");
-    }
-  };
-
-  const handleCancel = async (bookingId: number) => {
-    const confirmCancel = confirm("Are you sure you want to cancel this booking?");
-    if (!confirmCancel) return;
-
-    const token = localStorage.getItem("access_token");
-
-    const res = await fetch(`http://localhost:8000/bookings/cancel/${bookingId}`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (res.ok) {
-      toast.success("Booking cancelled.");
-      fetchBookings();
-    } else {
-      toast.error("Failed to cancel booking.");
-    }
-  };
+  const [processing, setProcessing] = useState<number | null>(null);
 
   const fetchBookings = async () => {
     try {
@@ -98,118 +67,214 @@ const UserBookings = () => {
     }
   };
 
+  const handleReschedule = async (bookingId: number) => {
+    const newDate = prompt("Enter new date (YYYY-MM-DD):");
+    const newTime = prompt("Enter new time (e.g. 14:00):");
+
+    if (!newDate || !newTime) {
+      toast.warning("Both date and time are required to reschedule");
+      return;
+    }
+
+    try {
+      setProcessing(bookingId);
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(`http://localhost:8000/bookings/reschedule/${bookingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ date: newDate, time: newTime }),
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      toast.success("Booking rescheduled successfully!");
+      await fetchBookings();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reschedule booking");
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleCancel = async (bookingId: number) => {
+    if (!confirm("Are you sure you want to cancel this booking?")) return;
+
+    try {
+      setProcessing(bookingId);
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(`http://localhost:8000/bookings/cancel/${bookingId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      toast.success("Booking cancelled successfully!");
+      await fetchBookings();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to cancel booking");
+    } finally {
+      setProcessing(null);
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
   }, []);
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
       day: "numeric",
     });
+  };
 
-  const formatTime = (timeString: string) => timeString;
+  const formatTime = (timeString: string) => {
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
-          <p className="font-bold">Error</p>
-          <p>{error}</p>
-          <button
-            onClick={fetchBookings}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              <p className="font-bold">Error</p>
+            </div>
+            <p className="mt-1">{error}</p>
+            <Button
+              onClick={fetchBookings}
+              variant="destructive"
+              className="mt-2"
+            >
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">My Bookings</h2>
-        <button
-          onClick={fetchBookings}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex items-center"
-        >
-          Refresh
-        </button>
-      </div>
-
-      {bookings.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No bookings found</h3>
-          <p className="mt-1 text-sm text-gray-500">You haven't made any bookings yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {bookings.map((booking) => (
-            <div
-              key={booking.id}
-              className="border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div className="bg-white p-5">
-                <div className="flex justify-between">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {booking.service_type}
-                  </h3>
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusColors[booking.status]}`}
-                  >
-                    {booking.status}
-                  </span>
-                </div>
-
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Date & Time</p>
-                    <p className="text-sm text-gray-900">
-                      {formatDate(booking.date)} at {formatTime(booking.time)}
-                    </p>
-                  </div>
-
-                  {booking.notes && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Notes</p>
-                      <p className="text-sm text-gray-900">{booking.notes}</p>
-                    </div>
-                  )}
-                </div>
-
-                {(booking.status === "Pending" || booking.status === "Accepted") && (
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-sm font-medium hover:bg-blue-100"
-                      onClick={() => handleReschedule(booking.id)}
-                    >
-                      Reschedule
-                    </button>
-                    <button
-                      className="px-3 py-1 bg-red-50 text-red-600 rounded-md text-sm font-medium hover:bg-red-100"
-                      onClick={() => handleCancel(booking.id)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </div>
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <Calendar className="h-6 w-6" />
+              My Bookings
+            </CardTitle>
+            <Button onClick={fetchBookings} variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {bookings.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900">No bookings found</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                You haven't made any bookings yet.
+              </p>
             </div>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Service</TableHead>
+                    <TableHead>Date & Time</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Notes</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bookings.map((booking) => (
+                    <TableRow key={booking.id}>
+                      <TableCell className="font-medium">
+                        {booking.service_type}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span>{formatDate(booking.date)}</span>
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>{formatTime(booking.time)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={statusConfig[booking.status].color}>
+                          {statusConfig[booking.status].icon}
+                          {booking.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {booking.notes || "-"}
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        {(booking.status === "Pending" || booking.status === "Accepted") && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleReschedule(booking.id)}
+                              disabled={processing === booking.id}
+                            >
+                              {processing === booking.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Edit className="mr-2 h-4 w-4" />
+                              )}
+                              Reschedule
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleCancel(booking.id)}
+                              disabled={processing === booking.id}
+                            >
+                              {processing === booking.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <X className="mr-2 h-4 w-4" />
+                              )}
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
