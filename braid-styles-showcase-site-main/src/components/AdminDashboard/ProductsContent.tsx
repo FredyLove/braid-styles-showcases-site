@@ -6,7 +6,7 @@ const ProductsContent = () => {
       id: 1,
       name: "Braiding Hair Bundles",
       description: "Premium synthetic & human hair for all braid styles",
-      priceRange: "$15-$50",
+      priceRange: "XAF 1500-5000",
       icon: <Scissors className="text-[#b36f34] h-8 w-8" />,
       popularItems: ["X-Pression Pre-Stretched", "Kanekalon Jumbo Braid", "Ombre Passion Twists"]
     },
@@ -14,7 +14,7 @@ const ProductsContent = () => {
       id: 2,
       name: "Edge Control & Gels",
       description: "Keep your edges laid and braids neat for weeks",
-      priceRange: "$8-$20",
+      priceRange: "XAF 1000-2000",
       icon: <SprayCan className="text-[#b36f34] h-8 w-8" />,
       popularItems: ["Eco Style Gel", "Got2b Glued", "African Pride Braid Spray"]
     },
@@ -22,7 +22,7 @@ const ProductsContent = () => {
       id: 3,
       name: "Scalp & Hair Oils",
       description: "Nourishing treatments for healthy hair under braids",
-      priceRange: "$10-$25",
+      priceRange: "XAF 1500-2500",
       icon: <Droplet className="text-[#b36f34] h-8 w-8" />,
       popularItems: ["Wild Growth Oil", "Jamaican Black Castor Oil", "Tea Tree Scalp Treatment"]
     },
@@ -30,7 +30,7 @@ const ProductsContent = () => {
       id: 4,
       name: "Braiding Tools",
       description: "Essential tools for professional braiding results",
-      priceRange: "$5-$30",
+      priceRange: "XAF 1000-2000",
       icon: <Fan className="text-[#b36f34] h-8 w-8" />,
       popularItems: ["Rat Tail Comb", "Tension Clips", "Braiding Needle"]
     },
@@ -38,7 +38,7 @@ const ProductsContent = () => {
       id: 5,
       name: "Aftercare Kits",
       description: "Everything clients need to maintain their braids",
-      priceRange: "$25-$60",
+      priceRange: "XAF 1000-2000",
       icon: <ShoppingBag className="text-[#b36f34] h-8 w-8" />,
       popularItems: ["Braided Wig Care Kit", "Loc Maintenance Set", "Silk Bonnet & Scarf"]
     },
@@ -46,7 +46,7 @@ const ProductsContent = () => {
       id: 6,
       name: "Digital Products",
       description: "Instant downloads with no inventory needed",
-      priceRange: "$5-$50",
+      priceRange: "XAF 1000-2000",
       icon: <ShoppingBag className="text-[#b36f34] h-8 w-8" />,
       popularItems: ["Braid Style eBook", "Business Templates", "Video Tutorials"]
     }

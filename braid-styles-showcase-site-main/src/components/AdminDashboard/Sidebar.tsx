@@ -33,7 +33,7 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
           }`}
         >
           <CalendarIcon className="h-5 w-5 mr-3" />
-          Appointments
+          Bookings
         </button>
         <button
           onClick={() => setActiveTab('services')}
