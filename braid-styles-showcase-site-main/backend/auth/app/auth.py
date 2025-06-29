@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 SECRET_KEY = "Fredylov614@g"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
