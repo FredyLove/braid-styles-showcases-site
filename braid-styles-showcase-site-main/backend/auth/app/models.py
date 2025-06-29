@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, Integer, String, Date, ForeignKey, Text, JSON
+from datetime import datetime, timezone
+from sqlalchemy import Boolean, Column, Integer, String, Date, DateTime, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -13,6 +14,8 @@ class User(Base):
     role = Column(String, default="user")
 
     bookings = relationship("Booking", back_populates="user")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete")  # Fixed: plural 'notifications'
+    reviews = relationship("Review", back_populates="user")
 
 
 # --- Booking Model ---
@@ -41,9 +44,10 @@ class Service(Base):
     features = Column(JSON, nullable=False)  # JSON column to store a list of strings
     icon = Column(String, nullable=False)     # Name of the icon (e.g., "Shield", "Clock")
 
+    reviews = relationship("Review", back_populates="service")
+
 
 # --- Video Tutorial Model ---
-
 class Tutorial(Base):
     __tablename__ = "tutorials"
 
@@ -54,3 +58,31 @@ class Tutorial(Base):
     duration = Column(String)
     difficulty = Column(String)
     show_on_homepage = Column(Boolean, default=False)
+
+
+# --- Notification Model ---
+class Notification(Base):
+    __tablename__ = "notifications"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    message = Column(String, nullable=False)
+    is_read = Column(Boolean, default=False)
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    
+    user = relationship("User", back_populates="notifications")  # Fixed: plural 'notifications'
+
+
+# --- Review Model ---
+class Review(Base):
+    __tablename__ = "reviews"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    service_id = Column(Integer, ForeignKey("services.id"))
+    rating = Column(Integer)  # 1-5 stars
+    comment = Column(Text)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    user = relationship("User", back_populates="reviews")
+    service = relationship("Service", back_populates="reviews")

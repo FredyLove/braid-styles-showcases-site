@@ -32,6 +32,10 @@ const statusConfig = {
     color: "bg-green-100 text-green-800 hover:bg-green-200",
     icon: <Check className="h-4 w-4 mr-1" />,
   },
+  Cancelled: { // Add this if your backend uses "Cancelled"
+    color: "bg-red-100 text-red-800 hover:bg-red-200",
+    icon: <X className="h-4 w-4 mr-1" />,
+  },
 };
 
 const UserBookings = () => {
@@ -73,6 +77,18 @@ const UserBookings = () => {
 
     if (!newDate || !newTime) {
       toast.warning("Both date and time are required to reschedule");
+      return;
+    }
+
+    // Validate date format
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+      toast.error("Please enter date in YYYY-MM-DD format");
+      return;
+    }
+
+    // Validate time format
+    if (!/^\d{2}:\d{2}$/.test(newTime)) {
+      toast.error("Please enter time in HH:MM format (24-hour)");
       return;
     }
 
@@ -129,8 +145,27 @@ const UserBookings = () => {
     fetchBookings();
   }, []);
 
+  const parseDate = (dateString: string) => {
+    // Handle ISO format (YYYY-MM-DD)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    
+    // Fallback to Date parsing
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.error("Invalid date string:", dateString);
+      return null;
+    }
+    return date;
+  };
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    const date = parseDate(dateString);
+    if (!date) return "Invalid date";
+
+    return date.toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -139,10 +174,28 @@ const UserBookings = () => {
   };
 
   const formatTime = (timeString: string) => {
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!timeString) return "-";
+    
+    // Handle simple HH:MM format
+    if (/^\d{2}:\d{2}$/.test(timeString)) {
+      return timeString;
+    }
+
+    // Handle more complex time formats
+    try {
+      const time = new Date(`2000-01-01T${timeString}`);
+      if (isNaN(time.getTime())) {
+        console.error("Invalid time string:", timeString);
+        return timeString; // Return original as fallback
+      }
+      return time.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (e) {
+      console.error("Time parsing error:", e);
+      return timeString;
+    }
   };
 
   if (loading) {

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 # --- User-related Schemas ---
@@ -127,3 +127,22 @@ class TutorialOut(TutorialBase):
 
     class Config:
         from_attributes = True
+
+class NotificationBase(BaseModel):
+    message: str
+    is_read: bool = False
+
+class NotificationCreate(NotificationBase):
+    type: Optional[str] = None
+    related_id: Optional[int] = None
+
+class Notification(NotificationBase):
+    id: int
+    user_id: int
+    timestamp: datetime
+    read_at: Optional[datetime] = None
+    type: Optional[str] = None
+    related_id: Optional[int] = None
+    
+    class Config:
+        from_attributes = True 

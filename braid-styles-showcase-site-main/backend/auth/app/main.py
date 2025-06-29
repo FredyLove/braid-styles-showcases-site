@@ -11,7 +11,7 @@ from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from app.routers import admin_user, booking, cleanup, services, tutorials
+from app.routers import admin_user, booking, cleanup, services, tutorials, notifications
 
 app = FastAPI()
 
@@ -27,6 +27,7 @@ app.include_router(booking.router)
 app.include_router(cleanup.router)
 app.include_router(services.router)
 app.include_router(tutorials.router)
+app.include_router(notifications.router)
 
 # CORS (for frontend connection)
 app.add_middleware(

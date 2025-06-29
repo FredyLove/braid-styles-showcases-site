@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { cn } from "@/lib/utils";
+import Notifications from "./Notification";
 
 type DecodedToken = {
   sub: string;
@@ -95,7 +96,7 @@ const Navigation = ({ isLoggedIn }: NavigationProps) => {
   const logout = () => {
     localStorage.removeItem("access_token");
     setUser(null);
-    navigate("/");
+    navigate("/login");
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -180,7 +181,15 @@ const Navigation = ({ isLoggedIn }: NavigationProps) => {
               <Phone className="w-4 h-4" />
               Contact
             </button>
-            
+
+            {/*Bell for Notifications */}
+
+            {user && (
+              <div className="relative">
+                <Notifications />
+              </div>
+            )} 
+
             {!user && (
               <Button 
                 onClick={() => scrollToSection("contact")} 
